@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+.industrial-card {
+  @apply bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden;
+}
+
+.status-badge {
+  @apply px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-available {
+  @apply bg-emerald-100 text-emerald-700;
+}
+
+.status-inuse {
+  @apply bg-rose-100 text-rose-700;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
