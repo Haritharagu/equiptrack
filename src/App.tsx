@@ -23,8 +23,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Machine, Page, MachineStatus } from './types';
-import { MOCK_MACHINES, MOCK_SITES } from './constants';
+import { Equipment, Page } from './types';
+import { MOCK_EQUIPMENT } from './constants';
 
 // --- Components ---
 
@@ -37,9 +37,9 @@ const Sidebar = ({ activePage, setActivePage, onLogout, isOpen, setIsOpen }: {
 }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'machines', label: 'Machines', icon: Truck },
-    { id: 'take', label: 'Take Machine', icon: ArrowUpRight },
-    { id: 'return', label: 'Return Machine', icon: ArrowDownLeft },
+    { id: 'equipment', label: 'Equipment', icon: Truck },
+    { id: 'take', label: 'Take Equipment', icon: ArrowUpRight },
+    { id: 'return', label: 'Return Equipment', icon: ArrowDownLeft },
   ];
 
   return (
@@ -192,22 +192,20 @@ const LoginPage = ({ onLogin }: { onLogin: () => void }) => {
   );
 };
 
-const Dashboard = ({ machines, onSearchSelect }: { machines: Machine[], onSearchSelect: (m: Machine) => void }) => {
+const Dashboard = ({ equipment, onSearchSelect }: { equipment: Equipment[], onSearchSelect: (e: Equipment) => void }) => {
   const [search, setSearch] = useState('');
   
   const stats = useMemo(() => ({
-    total: machines.length,
-    inUse: machines.filter(m => m.status === 'In Use').length,
-    available: machines.filter(m => m.status === 'Available').length,
-  }), [machines]);
+    total: equipment.length,
+  }), [equipment]);
 
   const filteredResults = useMemo(() => {
     if (!search.trim()) return [];
-    return machines.filter(m => 
-      m.name.toLowerCase().includes(search.toLowerCase()) || 
-      m.code.toLowerCase().includes(search.toLowerCase())
+    return equipment.filter(e => 
+      e.name.toLowerCase().includes(search.toLowerCase()) || 
+      e.serialNumber.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search, machines]);
+  }, [search, equipment]);
 
   return (
     <div className="space-y-8">
@@ -216,24 +214,22 @@ const Dashboard = ({ machines, onSearchSelect }: { machines: Machine[], onSearch
         <p className="text-slate-500">Welcome back, Supervisor. Here's the current status.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard label="Total Machines" value={stats.total} icon={Truck} colorClass="bg-blue-100 text-blue-600" />
-        <StatCard label="Machines In Use" value={stats.inUse} icon={ArrowUpRight} colorClass="bg-rose-100 text-rose-600" />
-        <StatCard label="Available" value={stats.available} icon={CheckCircle2} colorClass="bg-emerald-100 text-emerald-600" />
+      <div className="grid grid-cols-1 gap-6">
+        <StatCard label="Total Equipment" value={stats.total} icon={Truck} colorClass="bg-blue-100 text-blue-600" />
       </div>
 
       <div className="relative">
         <div className="industrial-card p-6 space-y-4">
           <label className="text-lg font-bold text-slate-900 flex items-center gap-2">
             <Search className="w-5 h-5 text-emerald-500" />
-            Quick Machine Search
+            Quick Equipment Search
           </label>
           <div className="relative">
             <input 
               type="text" 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or machine code (e.g. EX-001)..."
+              placeholder="Search by name or serial number (e.g. EX-001)..."
               className="w-full pl-4 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-lg"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -252,25 +248,22 @@ const Dashboard = ({ machines, onSearchSelect }: { machines: Machine[], onSearch
                 <p className="text-sm font-medium text-slate-500">Search Results ({filteredResults.length})</p>
                 {filteredResults.length > 0 ? (
                   <div className="grid grid-cols-1 gap-3">
-                    {filteredResults.map(machine => (
+                    {filteredResults.map(item => (
                       <button
-                        key={machine.id}
-                        onClick={() => onSearchSelect(machine)}
+                        key={item.id}
+                        onClick={() => onSearchSelect(item)}
                         className="flex items-center justify-between p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-200 rounded-xl transition-all group text-left"
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`p-2 rounded-lg ${machine.status === 'Available' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                          <div className={`p-2 rounded-lg bg-emerald-100 text-emerald-600`}>
                             <Truck className="w-5 h-5" />
                           </div>
                           <div>
-                            <p className="font-bold text-slate-900">{machine.name}</p>
-                            <p className="text-xs font-mono text-slate-500">{machine.code}</p>
+                            <p className="font-bold text-slate-900">{item.name}</p>
+                            <p className="text-xs font-mono text-slate-500">{item.serialNumber}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className={`status-badge ${machine.status === 'Available' ? 'status-available' : 'status-inuse'}`}>
-                            {machine.status}
-                          </span>
                           <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors" />
                         </div>
                       </button>
@@ -279,7 +272,7 @@ const Dashboard = ({ machines, onSearchSelect }: { machines: Machine[], onSearch
                 ) : (
                   <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
                     <AlertCircle className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                    <p className="text-slate-500">No machines found matching "{search}"</p>
+                    <p className="text-slate-500">No equipment found matching "{search}"</p>
                   </div>
                 )}
               </motion.div>
@@ -294,7 +287,7 @@ const Dashboard = ({ machines, onSearchSelect }: { machines: Machine[], onSearch
 const BottomNav = ({ activePage, setActivePage }: { activePage: Page, setActivePage: (p: Page) => void }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
-    { id: 'machines', label: 'Machines', icon: Truck },
+    { id: 'equipment', label: 'Equipment', icon: Truck },
     { id: 'take', label: 'Take', icon: ArrowUpRight },
     { id: 'return', label: 'Return', icon: ArrowDownLeft },
   ];
@@ -320,27 +313,22 @@ const BottomNav = ({ activePage, setActivePage }: { activePage: Page, setActiveP
   );
 };
 
-const MachineList = ({ machines, onSelect }: { machines: Machine[], onSelect: (m: Machine) => void }) => {
+const EquipmentList = ({ equipment, onSelect }: { equipment: Equipment[], onSelect: (e: Equipment) => void }) => {
   return (
     <div className="space-y-6 pb-20 lg:pb-0">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Machine Inventory</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Equipment Inventory</h2>
           <p className="text-slate-500">Full list of equipment across all sites.</p>
-        </div>
-        <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 overflow-x-auto no-scrollbar">
-          <button className="px-4 py-2 bg-slate-100 text-slate-900 rounded-md text-sm font-medium whitespace-nowrap">All</button>
-          <button className="px-4 py-2 text-slate-500 hover:text-slate-900 rounded-md text-sm font-medium transition-colors whitespace-nowrap">Available</button>
-          <button className="px-4 py-2 text-slate-500 hover:text-slate-900 rounded-md text-sm font-medium transition-colors whitespace-nowrap">In Use</button>
         </div>
       </header>
 
       {/* Mobile Card View */}
       <div className="grid grid-cols-1 gap-4 md:hidden">
-        {machines.map((machine) => (
+        {equipment.map((item) => (
           <button 
-            key={machine.id}
-            onClick={() => onSelect(machine)}
+            key={item.id}
+            onClick={() => onSelect(item)}
             className="industrial-card p-4 text-left active:bg-slate-50 transition-colors"
           >
             <div className="flex justify-between items-start mb-3">
@@ -349,22 +337,19 @@ const MachineList = ({ machines, onSelect }: { machines: Machine[], onSelect: (m
                   <Truck className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-900 leading-tight">{machine.name}</p>
-                  <p className="text-xs font-mono text-slate-500">{machine.code}</p>
+                  <p className="font-bold text-slate-900 leading-tight">{item.name}</p>
+                  <p className="text-xs font-mono text-slate-500">{item.serialNumber}</p>
                 </div>
               </div>
-              <span className={`status-badge ${machine.status === 'Available' ? 'status-available' : 'status-inuse'}`}>
-                {machine.status}
-              </span>
             </div>
             <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
               <div className="flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
-                <span>{machine.currentSite}</span>
+                <span>{item.currentSite}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                <span>{machine.lastUpdated.split(' ')[0]}</span>
+                <span>{item.lastUpdated.split(' ')[0]}</span>
               </div>
             </div>
           </button>
@@ -376,41 +361,35 @@ const MachineList = ({ machines, onSelect }: { machines: Machine[], onSelect: (m
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Machine</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Code</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Equipment</th>
+              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Serial Number</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Current Site</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Last Updated</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {machines.map((machine) => (
-              <tr key={machine.id} className="hover:bg-slate-50 transition-colors group">
+            {equipment.map((item) => (
+              <tr key={item.id} className="hover:bg-slate-50 transition-colors group">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
                       <Truck className="w-5 h-5" />
                     </div>
-                    <span className="font-bold text-slate-900">{machine.name}</span>
+                    <span className="font-bold text-slate-900">{item.name}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 font-mono text-sm text-slate-500">{machine.code}</td>
+                <td className="px-6 py-4 font-mono text-sm text-slate-500">{item.serialNumber}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-1.5 text-slate-600">
                     <MapPin className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm">{machine.currentSite}</span>
+                    <span className="text-sm">{item.currentSite}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <span className={`status-badge ${machine.status === 'Available' ? 'status-available' : 'status-inuse'}`}>
-                    {machine.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-500">{machine.lastUpdated}</td>
+                <td className="px-6 py-4 text-sm text-slate-500">{item.lastUpdated}</td>
                 <td className="px-6 py-4 text-right">
                   <button 
-                    onClick={() => onSelect(machine)}
+                    onClick={() => onSelect(item)}
                     className="text-emerald-600 hover:text-emerald-700 font-bold text-sm transition-colors"
                   >
                     View Details
@@ -425,82 +404,64 @@ const MachineList = ({ machines, onSelect }: { machines: Machine[], onSelect: (m
   );
 };
 
-const MachineDetails = ({ machine, onTake, onReturn }: { machine: Machine, onTake: () => void, onReturn: () => void }) => {
+const EquipmentDetails = ({ equipment, onTake, onReturn }: { equipment: Equipment, onTake: () => void, onReturn: () => void }) => {
   return (
     <div className="space-y-6">
       <header className="flex items-center gap-4">
-        <div className={`p-4 rounded-2xl ${machine.status === 'Available' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+        <div className={`p-4 rounded-2xl bg-emerald-100 text-emerald-600`}>
           <Truck className="w-8 h-8" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-slate-900">{machine.name}</h2>
-          <p className="text-slate-500 font-mono">{machine.code}</p>
+          <h2 className="text-3xl font-bold text-slate-900">{equipment.name}</h2>
+          <p className="text-slate-500 font-mono">{equipment.serialNumber}</p>
         </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="industrial-card p-6 space-y-6">
-          <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">Current Status</h3>
+          <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">Details</h3>
           
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500">Availability</span>
-              <span className={`status-badge text-sm ${machine.status === 'Available' ? 'status-available' : 'status-inuse'}`}>
-                {machine.status}
-              </span>
-            </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-500">Current Location</span>
               <div className="flex items-center gap-1.5 text-slate-900 font-medium">
                 <MapPin className="w-4 h-4 text-slate-400" />
-                {machine.currentSite}
+                {equipment.currentSite}
               </div>
             </div>
-            {machine.status === 'In Use' && (
-              <>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Current Supervisor</span>
-                  <div className="flex items-center gap-1.5 text-slate-900 font-medium">
-                    <User className="w-4 h-4 text-slate-400" />
-                    {machine.supervisor}
-                  </div>
+            {equipment.supervisor && (
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Last Supervisor</span>
+                <div className="flex items-center gap-1.5 text-slate-900 font-medium">
+                  <User className="w-4 h-4 text-slate-400" />
+                  {equipment.supervisor}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Expected Return</span>
-                  <div className="flex items-center gap-1.5 text-slate-900 font-medium">
-                    <Calendar className="w-4 h-4 text-slate-400" />
-                    {machine.expectedReturn}
-                  </div>
-                </div>
-              </>
+              </div>
             )}
             <div className="flex justify-between items-center">
               <span className="text-slate-500">Last Activity</span>
               <div className="flex items-center gap-1.5 text-slate-400 text-sm">
                 <Clock className="w-4 h-4" />
-                {machine.lastUpdated}
+                {equipment.lastUpdated}
               </div>
             </div>
           </div>
 
-          <div className="pt-4 flex gap-3">
-            {machine.status === 'Available' ? (
-              <button 
-                onClick={onTake}
-                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
-              >
-                <ArrowUpRight className="w-5 h-5" />
-                Take Machine
-              </button>
-            ) : (
-              <button 
-                onClick={onReturn}
-                className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-rose-500/20 transition-all flex items-center justify-center gap-2"
-              >
-                <ArrowDownLeft className="w-5 h-5" />
-                Update Return
-              </button>
-            )}
+          <div className="pt-4 flex flex-col sm:flex-row gap-3">
+            <button 
+              onClick={onTake}
+              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+            >
+              <ArrowUpRight className="w-5 h-5" />
+              Take Equipment
+            </button>
+            <button 
+              onClick={onReturn}
+              className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-rose-500/20 transition-all flex items-center justify-center gap-2"
+            >
+              <ArrowDownLeft className="w-5 h-5" />
+              Return Equipment
+            </button>
           </div>
         </div>
 
@@ -510,7 +471,7 @@ const MachineDetails = ({ machine, onTake, onReturn }: { machine: Machine, onTak
             {[1, 2, 3].map((i) => (
               <div key={i} className="relative pl-6 border-l-2 border-slate-100 pb-6 last:pb-0">
                 <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-emerald-500" />
-                <p className="text-sm font-bold text-slate-900">Moved to {MOCK_SITES[i].name}</p>
+                <p className="text-sm font-bold text-slate-900">Moved to New Site</p>
                 <p className="text-xs text-slate-500 mt-1">March {14 - i}, 2024 • 09:00 AM</p>
                 <p className="text-xs text-slate-400 mt-2 italic">Supervisor: Robert Brown</p>
               </div>
@@ -522,12 +483,12 @@ const MachineDetails = ({ machine, onTake, onReturn }: { machine: Machine, onTak
   );
 };
 
-const TakeMachineForm = ({ machine, onSubmit }: { machine?: Machine, onSubmit: () => void }) => {
+const TakeEquipmentForm = ({ equipment, onSubmit }: { equipment?: Equipment, onSubmit: () => void }) => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <header>
-        <h2 className="text-2xl font-bold text-slate-900">Take Machine Form</h2>
-        <p className="text-slate-500">Register machine movement to a new site.</p>
+        <h2 className="text-2xl font-bold text-slate-900">Take Equipment Form</h2>
+        <p className="text-slate-500">Register equipment movement to a new site.</p>
       </header>
 
       <form className="industrial-card p-8 space-y-6" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
@@ -540,39 +501,38 @@ const TakeMachineForm = ({ machine, onSubmit }: { machine?: Machine, onSubmit: (
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Machine Code</label>
+            <label className="text-sm font-semibold text-slate-700">Serial Number</label>
             <div className="relative">
               <Truck className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl outline-none" value={machine?.code || ''} readOnly placeholder="Select a machine" />
+              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl outline-none" value={equipment?.serialNumber || ''} readOnly placeholder="Select equipment" />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Current Site</label>
+            <label className="text-sm font-semibold text-slate-700">Current Location / Site</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl outline-none" value={machine?.currentSite || ''} readOnly />
+              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" defaultValue={equipment?.currentSite || ''} placeholder="Type current location" required />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Going To Site</label>
-            <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 appearance-none" required>
-              <option value="">Select Destination Site</option>
-              {MOCK_SITES.map(site => <option key={site.id} value={site.name}>{site.name}</option>)}
-            </select>
+            <label className="text-sm font-semibold text-slate-700">Destination Site</label>
+            <div className="relative">
+              <ChevronRight className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Type destination site" required />
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Date & Time Taken</label>
-            <input type="datetime-local" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" required defaultValue={new Date().toISOString().slice(0, 16)} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Expected Return Date</label>
-            <input type="date" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" required />
+            <label className="text-sm font-semibold text-slate-700">Takeover Signature</label>
+            <div className="relative">
+              <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 font-serif italic" placeholder="Sign with your full name" required />
+            </div>
           </div>
         </div>
 
@@ -580,48 +540,60 @@ const TakeMachineForm = ({ machine, onSubmit }: { machine?: Machine, onSubmit: (
           type="submit"
           className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all transform active:scale-[0.98]"
         >
-          Confirm Machine Takeover
+          Confirm Takeover
         </button>
       </form>
     </div>
   );
 };
 
-const ReturnMachineForm = ({ machine, onSubmit }: { machine?: Machine, onSubmit: () => void }) => {
+const ReturnEquipmentForm = ({ equipment, onSubmit }: { equipment?: Equipment, onSubmit: () => void }) => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <header>
-        <h2 className="text-2xl font-bold text-slate-900">Return Machine Form</h2>
-        <p className="text-slate-500">Mark equipment as available for next use.</p>
+        <h2 className="text-2xl font-bold text-slate-900">Return Equipment Form</h2>
+        <p className="text-slate-500">Mark equipment as returned to site.</p>
       </header>
 
       <form className="industrial-card p-8 space-y-6" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Machine Code</label>
+          <label className="text-sm font-semibold text-slate-700">Serial Number</label>
           <div className="relative">
             <Truck className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl outline-none" value={machine?.code || ''} readOnly placeholder="Enter machine code" />
+            <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl outline-none" value={equipment?.serialNumber || ''} readOnly placeholder="Enter serial number" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">Current Location</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Type current location" required />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-700">Return Site Name</label>
+            <div className="relative">
+              <ChevronRight className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Type return site name" required />
+            </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Return Location (Site)</label>
-          <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 appearance-none" required>
-            <option value="">Select Return Site</option>
-            {MOCK_SITES.map(site => <option key={site.id} value={site.name}>{site.name}</option>)}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700">Return Date & Time</label>
-          <input type="datetime-local" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500" required defaultValue={new Date().toISOString().slice(0, 16)} />
+          <label className="text-sm font-semibold text-slate-700">Return Signature</label>
+          <div className="relative">
+            <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input type="text" className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-rose-500 font-serif italic" placeholder="Sign with your full name" required />
+          </div>
         </div>
 
         <button 
           type="submit"
           className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-rose-500/20 transition-all transform active:scale-[0.98]"
         >
-          Update Status to Available
+          Confirm Return
         </button>
       </form>
     </div>
@@ -633,16 +605,16 @@ const ReturnMachineForm = ({ machine, onSubmit }: { machine?: Machine, onSubmit:
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activePage, setActivePage] = useState<Page>('dashboard');
-  const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [machines, setMachines] = useState<Machine[]>(MOCK_MACHINES);
+  const [equipmentList, setEquipmentList] = useState<Equipment[]>(MOCK_EQUIPMENT);
 
   // Simple routing logic
   const renderPage = () => {
-    if (selectedMachine && activePage === 'dashboard') {
+    if (selectedEquipment && activePage === 'dashboard') {
       return (
-        <MachineDetails 
-          machine={selectedMachine} 
+        <EquipmentDetails 
+          equipment={selectedEquipment} 
           onTake={() => setActivePage('take')}
           onReturn={() => setActivePage('return')}
         />
@@ -651,15 +623,15 @@ export default function App() {
 
     switch (activePage) {
       case 'dashboard':
-        return <Dashboard machines={machines} onSearchSelect={(m) => setSelectedMachine(m)} />;
-      case 'machines':
-        return <MachineList machines={machines} onSelect={(m) => { setSelectedMachine(m); setActivePage('dashboard'); }} />;
+        return <Dashboard equipment={equipmentList} onSearchSelect={(e) => setSelectedEquipment(e)} />;
+      case 'equipment':
+        return <EquipmentList equipment={equipmentList} onSelect={(e) => { setSelectedEquipment(e); setActivePage('dashboard'); }} />;
       case 'take':
-        return <TakeMachineForm machine={selectedMachine || undefined} onSubmit={() => { setActivePage('dashboard'); setSelectedMachine(null); }} />;
+        return <TakeEquipmentForm equipment={selectedEquipment || undefined} onSubmit={() => { setActivePage('dashboard'); setSelectedEquipment(null); }} />;
       case 'return':
-        return <ReturnMachineForm machine={selectedMachine || undefined} onSubmit={() => { setActivePage('dashboard'); setSelectedMachine(null); }} />;
+        return <ReturnEquipmentForm equipment={selectedEquipment || undefined} onSubmit={() => { setActivePage('dashboard'); setSelectedEquipment(null); }} />;
       default:
-        return <Dashboard machines={machines} onSearchSelect={(m) => setSelectedMachine(m)} />;
+        return <Dashboard equipment={equipmentList} onSearchSelect={(e) => setSelectedEquipment(e)} />;
     }
   };
 
@@ -671,7 +643,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex">
       <Sidebar 
         activePage={activePage} 
-        setActivePage={(p) => { setActivePage(p); setSelectedMachine(null); }} 
+        setActivePage={(p) => { setActivePage(p); setSelectedEquipment(null); }} 
         onLogout={() => setIsLoggedIn(false)}
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
@@ -697,7 +669,7 @@ export default function App() {
 
           <AnimatePresence mode="wait">
             <motion.div
-              key={activePage + (selectedMachine?.id || '')}
+              key={activePage + (selectedEquipment?.id || '')}
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
@@ -709,7 +681,7 @@ export default function App() {
         </div>
       </main>
 
-      <BottomNav activePage={activePage} setActivePage={(p) => { setActivePage(p); setSelectedMachine(null); }} />
+      <BottomNav activePage={activePage} setActivePage={(p) => { setActivePage(p); setSelectedEquipment(null); }} />
     </div>
   );
 }

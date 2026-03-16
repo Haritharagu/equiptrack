@@ -1,19 +1,10 @@
-export type MachineStatus = 'Available' | 'In Use';
-
-export interface Machine {
+export interface Equipment {
   id: string;
   name: string;
-  code: string;
+  serialNumber: string;
   currentSite: string;
-  status: MachineStatus;
   supervisor?: string;
   lastUpdated: string;
-  expectedReturn?: string;
 }
 
-export interface Site {
-  id: string;
-  name: string;
-}
-
-export type Page = 'dashboard' | 'machines' | 'take' | 'return' | 'login';
+export type Page = 'dashboard' | 'equipment' | 'take' | 'return' | 'login';
